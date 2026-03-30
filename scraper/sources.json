@@ -1,0 +1,698 @@
+[
+  {
+    "nombre": "Edomex - Procedimientos Adquisitivos",
+    "estado": "Estado de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compramex.edomex.gob.mx/compramex/public/catalogosExternos/procedimientsoAdquisitivos.xhtml",
+    "notas": "Portal CompraNet estatal, tabla paginada JSF",
+    "scraper_type": "datatables"
+  },
+  {
+    "nombre": "Edomex - Procedimientos Electrónicos",
+    "estado": "Estado de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compramex.edomex.gob.mx/compramex/public/catalogosExternos/procedimientosElectronicos.xhtml",
+    "notas": "Portal CompraNet estatal, procedimientos electrónicos",
+    "scraper_type": "datatables"
+  },
+  {
+    "nombre": "Baja California - Licitaciones",
+    "estado": "Baja California",
+    "tipo_ente": "ejecutivo",
+    "url": "https://tramites.ebajacalifornia.gob.mx/Compras/Licitaciones",
+    "notas": "Portal de compras del gobierno estatal",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Baja California - CESPT Obra Pública",
+    "estado": "Baja California",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.cespt.gob.mx/transparenciacespt/obrapublica.aspx?anio=0&tipo=0&stipo=0",
+    "notas": "Comisión Estatal de Servicios Públicos de Tijuana, transparencia obra pública",
+    "scraper_type": "tabla_html"
+  },
+  {
+    "nombre": "Aguascalientes - Licitaciones Estatales",
+    "estado": "Aguascalientes",
+    "tipo_ente": "ejecutivo",
+    "url": "https://egobierno2.aguascalientes.gob.mx/servicios/LicitacionesEstatales/ui/dependencia.aspx?i=65",
+    "notas": "Portal de licitaciones estatales, ASPX",
+    "scraper_type": "tabla_html"
+  },
+  {
+    "nombre": "Aguascalientes - SOP Licitaciones Vigentes",
+    "estado": "Aguascalientes",
+    "tipo_ente": "ejecutivo",
+    "url": "https://eservicios2.aguascalientes.gob.mx/sop/appsWEBSOP/UI/licitacionesVigentes/",
+    "notas": "Secretaría de Obra Pública de Aguascalientes",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Aguascalientes - IEA Adquisiciones",
+    "estado": "Aguascalientes",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.iea.gob.mx/adquisiciones",
+    "notas": "Instituto de Educación de Aguascalientes, adquisiciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Baja California Sur - CompraNet BCS",
+    "estado": "Baja California Sur",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compranet.bcs.gob.mx:8443/app/portal",
+    "notas": "Portal CompraNet estatal de Baja California Sur",
+    "scraper_type": "datatables"
+  },
+  {
+    "nombre": "Campeche - Convocatorias Estatales",
+    "estado": "Campeche",
+    "tipo_ente": "ejecutivo",
+    "url": "https://safin.campeche.gob.mx/convocatorias/estatales",
+    "notas": "SAFIN Campeche, convocatorias estatales",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Campeche - Convocatorias Nacionales",
+    "estado": "Campeche",
+    "tipo_ente": "ejecutivo",
+    "url": "https://safin.campeche.gob.mx/convocatorias/nacionales",
+    "notas": "SAFIN Campeche, convocatorias nacionales",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Campeche - DIF Licitaciones",
+    "estado": "Campeche",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://difcampeche.gob.mx/licitaciones/",
+    "notas": "DIF Campeche, portal de licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Campeche - CCEIH",
+    "estado": "Campeche",
+    "tipo_ente": "órgano autónomo",
+    "url": "http://cceih.ddns.net/",
+    "notas": "Centro de Convenciones e Infraestructura de Campeche, sitio DDNS",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Chiapas - Puerto Chiapas Licitaciones AOP",
+    "estado": "Chiapas",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.puertochiapas.com.mx/licitaciones-aop",
+    "notas": "Puerto Chiapas, licitaciones de administración y obra pública",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Chiapas - Poder Judicial Licitaciones",
+    "estado": "Chiapas",
+    "tipo_ente": "poder judicial",
+    "url": "https://poderjudicialchiapas.gob.mx/licitacionpje",
+    "notas": "Poder Judicial del Estado de Chiapas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Chihuahua - Contrataciones",
+    "estado": "Chihuahua",
+    "tipo_ente": "ejecutivo",
+    "url": "https://contrataciones.chihuahua.gob.mx/",
+    "notas": "Portal de contrataciones del gobierno de Chihuahua",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Chihuahua - IEE Licitaciones",
+    "estado": "Chihuahua",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://ieechihuahua.org.mx/licitaciones",
+    "notas": "Instituto Estatal Electoral de Chihuahua",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "CDMX - Concurso Digital Convocatorias Públicas",
+    "estado": "Ciudad de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://concursodigital.finanzas.cdmx.gob.mx/convocatorias_publicas#middle",
+    "notas": "Secretaría de Finanzas CDMX, convocatorias públicas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "CDMX - SECGOB Licitaciones",
+    "estado": "Ciudad de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.secgob.cdmx.gob.mx/convocatorias/licitaciones",
+    "notas": "Secretaría de Gobierno CDMX, convocatorias de licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "CDMX - Tianguis Digital Datos Abiertos",
+    "estado": "Ciudad de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://datosabiertostianguisdigital.cdmx.gob.mx/busqueda",
+    "notas": "Portal de datos abiertos del Tianguis Digital CDMX",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "CDMX - Finanzas Licitaciones Nacionales",
+    "estado": "Ciudad de México",
+    "tipo_ente": "ejecutivo",
+    "url": "https://procesos.finanzas.cdmx.gob.mx/licitaciones/public/Nacionales",
+    "notas": "Secretaría de Finanzas CDMX, licitaciones nacionales",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "CDMX - Poder Judicial Licitaciones",
+    "estado": "Ciudad de México",
+    "tipo_ente": "poder judicial",
+    "url": "https://www.poderjudicialcdmx.gob.mx/licitaciones/",
+    "notas": "Poder Judicial de la Ciudad de México",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "CDMX - FGJ Licitaciones",
+    "estado": "Ciudad de México",
+    "tipo_ente": "fiscalía",
+    "url": "https://www.fgjcdmx.gob.mx/micrositios/licitaciones",
+    "notas": "Fiscalía General de Justicia de la Ciudad de México",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Coahuila - Torreón Licitaciones 2026",
+    "estado": "Coahuila",
+    "tipo_ente": "municipio",
+    "url": "https://www.torreon.gob.mx/licitaciones_2026.html",
+    "notas": "Municipio de Torreón, licitaciones 2026",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Coahuila - IEC Licitaciones Públicas",
+    "estado": "Coahuila",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://iecoah.org.mx/licitaciones-publicas/",
+    "notas": "Instituto Electoral de Coahuila",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Colima - SECOP",
+    "estado": "Colima",
+    "tipo_ente": "ejecutivo",
+    "url": "https://secop.col.gob.mx/",
+    "notas": "Sistema Estatal de Compras y Obras Públicas de Colima",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Colima - SECOL Licitaciones Públicas",
+    "estado": "Colima",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.secolima.gob.mx/index.php/secolima/fbCLicitacionesPublica",
+    "notas": "Secretaría de Contrataciones y Licitaciones de Colima",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Colima - IEE Compras",
+    "estado": "Colima",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://ieecolima.org.mx/siscompras.html",
+    "notas": "Instituto Electoral del Estado de Colima, sistema de compras",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Durango - Procedimientos de Contratación",
+    "estado": "Durango",
+    "tipo_ente": "ejecutivo",
+    "url": "https://comprasestatal.durango.gob.mx/consulta/ProcedimientosDeContratacion",
+    "notas": "Portal de compras estatales de Durango",
+    "scraper_type": "datatables"
+  },
+  {
+    "nombre": "Durango - Poder Judicial Licitaciones",
+    "estado": "Durango",
+    "tipo_ente": "poder judicial",
+    "url": "https://pjdgo.gob.mx/licitaciones/",
+    "notas": "Poder Judicial del Estado de Durango",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Guanajuato - Transparencia Licitaciones",
+    "estado": "Guanajuato",
+    "tipo_ente": "ejecutivo",
+    "url": "https://transparencia.guanajuato.gob.mx/transparencia/informacion_publica_licitaciones.php",
+    "notas": "Portal de transparencia del gobierno de Guanajuato",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Guanajuato - GtoLicita Infraestructura",
+    "estado": "Guanajuato",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.guanajuatoconstruye.mx/GtoLicita/",
+    "notas": "Portal de licitaciones de infraestructura de Guanajuato",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Guerrero - CompraNet Expedientes Públicos",
+    "estado": "Guerrero",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compranet.guerrero.gob.mx/expedientespublicos.aspx",
+    "notas": "Portal CompraNet estatal de Guerrero, expedientes públicos",
+    "scraper_type": "tabla_html"
+  },
+  {
+    "nombre": "Guerrero - IEPC Licitaciones Públicas",
+    "estado": "Guerrero",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://www.iepcgro.mx/principal/sitio/licitaciones_publicas",
+    "notas": "Instituto Electoral y de Participación Ciudadana de Guerrero",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Hidalgo - Infraestructura Licitaciones",
+    "estado": "Hidalgo",
+    "tipo_ente": "ejecutivo",
+    "url": "https://s-infraestructura.hidalgo.gob.mx/Licitaciones",
+    "notas": "Secretaría de Infraestructura Pública de Hidalgo",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Hidalgo - Poder Judicial Licitaciones 2026",
+    "estado": "Hidalgo",
+    "tipo_ente": "poder judicial",
+    "url": "https://www.pjhidalgo.gob.mx/Inicio/Licitaciones.aspx?Anio=2026",
+    "notas": "Poder Judicial del Estado de Hidalgo",
+    "scraper_type": "tabla_html"
+  },
+  {
+    "nombre": "Hidalgo - ASEH Licitaciones",
+    "estado": "Hidalgo",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://www.aseh.gob.mx/Licitaciones/Licitaciones",
+    "notas": "Auditoría Superior del Estado de Hidalgo",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Hidalgo - Pachuca SIPOT Licitaciones",
+    "estado": "Hidalgo",
+    "tipo_ente": "municipio",
+    "url": "https://datos.pachuca.gob.mx/sipot/28.php",
+    "notas": "Municipio de Pachuca, sistema SIPOT transparencia",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Jalisco - Compras Bienes y Servicios",
+    "estado": "Jalisco",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compras.jalisco.gob.mx/requisition/tree?operational_destiny_id=2",
+    "notas": "Portal de compras de Jalisco, bienes y servicios",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Jalisco - Compras Portal",
+    "estado": "Jalisco",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compras.jalisco.gob.mx/requisition/tree",
+    "notas": "Portal de compras del gobierno de Jalisco",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Jalisco - ASEJ Convocatorias",
+    "estado": "Jalisco",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://www.asej.gob.mx/transparencia_asej/es/convocatorias",
+    "notas": "Auditoría Superior del Estado de Jalisco",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Jalisco - DIF Compras Público",
+    "estado": "Jalisco",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://difjalisco.gob.mx/compras-publico",
+    "notas": "DIF Jalisco, portal de compras públicas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Michoacán - Fiscalía Licitaciones Públicas",
+    "estado": "Michoacán",
+    "tipo_ente": "fiscalía",
+    "url": "https://adquisiciones.fiscaliamichoacan.gob.mx/licitaciones_publicas",
+    "notas": "Fiscalía General del Estado de Michoacán, licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Michoacán - Seguridad Pública Procesos",
+    "estado": "Michoacán",
+    "tipo_ente": "ejecutivo",
+    "url": "https://subcom-seguridad-michoacan.gob.mx/pdf/?opcion=lstprc",
+    "notas": "Subsecretaría de Seguridad de Michoacán, listado de procesos",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Morelos - Compras Licitaciones 2026",
+    "estado": "Morelos",
+    "tipo_ente": "ejecutivo",
+    "url": "https://compras.morelos.gob.mx/licitaciones-2026",
+    "notas": "Portal de compras del gobierno de Morelos",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Morelos - Fiscalía Licitaciones",
+    "estado": "Morelos",
+    "tipo_ente": "fiscalía",
+    "url": "https://servicios.fiscaliamorelos.gob.mx/tramites/licitaciones",
+    "notas": "Fiscalía General del Estado de Morelos",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Morelos - TSJ Licitaciones",
+    "estado": "Morelos",
+    "tipo_ente": "poder judicial",
+    "url": "https://tsjmorelos.gob.mx/licitaciones/",
+    "notas": "Tribunal Superior de Justicia de Morelos",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Nayarit - CEA Licitaciones",
+    "estado": "Nayarit",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.cea.nayarit.gob.mx/transparencia/licitaciones.php",
+    "notas": "Comisión Estatal del Agua de Nayarit",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Nuevo León - Licitaciones Dependencias Centrales",
+    "estado": "Nuevo León",
+    "tipo_ente": "ejecutivo",
+    "url": "https://nl.gob.mx/es/licitaciones-dependencias-centrales",
+    "notas": "Portal del gobierno de Nuevo León, licitaciones de dependencias",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Oaxaca - Administración Licitaciones",
+    "estado": "Oaxaca",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.oaxaca.gob.mx/administracion/licitaciones/",
+    "notas": "Secretaría de Administración del gobierno de Oaxaca",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Oaxaca - SOAPA Licitaciones",
+    "estado": "Oaxaca",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.oaxaca.gob.mx/soapa/licitacion-publica/",
+    "notas": "Sistema Oaxaqueño de Agua Potable y Alcantarillado",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Oaxaca - SINFRA Licitaciones Públicas",
+    "estado": "Oaxaca",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.oaxaca.gob.mx/sinfra/licitaciones-publicas/",
+    "notas": "Secretaría de Infraestructura del estado de Oaxaca",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Oaxaca - UTM Procedimientos Estatales",
+    "estado": "Oaxaca",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.utm.mx/web/transparencia/difusion_de_procedimientos_estatales_licitaciones_e_invitaciones",
+    "notas": "Universidad Tecnológica de la Mixteca, transparencia licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Oaxaca - ASFE Licitaciones",
+    "estado": "Oaxaca",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://asfeoaxaca.gob.mx/licitaciones",
+    "notas": "Auditoría Superior de la Federación en Oaxaca",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Puebla - Adquisiciones Bienes y Servicios",
+    "estado": "Puebla",
+    "tipo_ente": "ejecutivo",
+    "url": "https://licitaciones.puebla.gob.mx/index.php/aquisiciones-bienes-y-servicios/convocatorias-aquisiciones-bienes-y-servicios",
+    "notas": "Portal de licitaciones de Puebla, adquisiciones",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Puebla - Obra Pública Convocatorias",
+    "estado": "Puebla",
+    "tipo_ente": "ejecutivo",
+    "url": "https://licitaciones.puebla.gob.mx/index.php/obra-publica-1/convocatorias-obra-publica",
+    "notas": "Portal de licitaciones de Puebla, obra pública",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Puebla - Municipio Capital Adjudicaciones",
+    "estado": "Puebla",
+    "tipo_ente": "municipio",
+    "url": "https://pueblacapital.gob.mx/convocatorias/adjudicaciones",
+    "notas": "Municipio de Puebla capital, convocatorias y adjudicaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Puebla - Poder Judicial Licitaciones",
+    "estado": "Puebla",
+    "tipo_ente": "poder judicial",
+    "url": "https://www.pjpuebla.gob.mx/licitaciones",
+    "notas": "Poder Judicial del Estado de Puebla",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Querétaro - CEI Convocatorias",
+    "estado": "Querétaro",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://ceiqro.queretaro.gob.mx/convocatorias",
+    "notas": "Comisión Estatal de Información de Querétaro",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Quintana Roo - SEOP Convocatorias",
+    "estado": "Quintana Roo",
+    "tipo_ente": "ejecutivo",
+    "url": "https://seop.qroo.gob.mx/convocatorias-de-licitaciones/",
+    "notas": "Secretaría de Obras Públicas de Quintana Roo",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Quintana Roo - SEGOB Convocatorias",
+    "estado": "Quintana Roo",
+    "tipo_ente": "ejecutivo",
+    "url": "https://segob.qroo.gob.mx/convocatorias-y-bases-de-licitacion/",
+    "notas": "Secretaría de Gobierno de Quintana Roo, bases de licitación",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Quintana Roo - IFEQROO Licitaciones",
+    "estado": "Quintana Roo",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://ifeqroo.qroo.gob.mx/convocatorias-a-licitaciones-de-obra-publica/",
+    "notas": "Instituto de Fomento Económico de Quintana Roo, licitaciones de obra pública",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "San Luis Potosí - Compras Gubernamentales",
+    "estado": "San Luis Potosí",
+    "tipo_ente": "ejecutivo",
+    "url": "https://sitio.sanluis.gob.mx/SanLuisPotoSi/Compras2",
+    "notas": "Portal de compras del gobierno de San Luis Potosí",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "San Luis Potosí - Licitaciones Públicas",
+    "estado": "San Luis Potosí",
+    "tipo_ente": "ejecutivo",
+    "url": "https://sitio.sanluis.gob.mx/SanLuisPotoSi/LicitacionesPublicas2",
+    "notas": "Portal de licitaciones públicas de San Luis Potosí",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "San Luis Potosí - JEC Procedimientos 2026",
+    "estado": "San Luis Potosí",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://jec.slp.gob.mx/procedimientos-2026/",
+    "notas": "Junta Electoral Central de San Luis Potosí, procedimientos 2026",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "San Luis Potosí - Contraloría SEEIPG Procesos Públicos",
+    "estado": "San Luis Potosí",
+    "tipo_ente": "ejecutivo",
+    "url": "https://contraloria-seeipg.slp.gob.mx/ProcsPublicos.php",
+    "notas": "Contraloría del Sistema Educativo del Estado, procesos públicos",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Sinaloa - SSS Adquisiciones",
+    "estado": "Sinaloa",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://compranet.sinaloa.gob.mx/servicios-de-salud-de-sinaloa-sss-adquisiciones",
+    "notas": "Servicios de Salud de Sinaloa, portal CompraNet estatal",
+    "scraper_type": "datatables"
+  },
+  {
+    "nombre": "Sonora - Obras Transparentes Licitaciones",
+    "estado": "Sonora",
+    "tipo_ente": "ejecutivo",
+    "url": "https://obrastransparentes.sonora.gob.mx/licitaciones",
+    "notas": "Portal de obras transparentes del gobierno de Sonora",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Sonora - Junta de Caminos Licitaciones",
+    "estado": "Sonora",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://juntadecaminos.sonora.gob.mx/index.php/convocatorias/licitaciones",
+    "notas": "Junta de Caminos del Estado de Sonora",
+    "scraper_type": "card_list"
+  },
+  {
+    "nombre": "Sonora - STJ Licitaciones",
+    "estado": "Sonora",
+    "tipo_ente": "poder judicial",
+    "url": "https://stjsonora.gob.mx/Licitaciones.htm",
+    "notas": "Supremo Tribunal de Justicia del Estado de Sonora",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tabasco - Villahermosa Licitaciones Vigentes",
+    "estado": "Tabasco",
+    "tipo_ente": "municipio",
+    "url": "https://www.villahermosa.gob.mx/licitaciones-vigentes/",
+    "notas": "Municipio de Villahermosa, licitaciones vigentes",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tabasco - Licitaciones Adquisiciones",
+    "estado": "Tabasco",
+    "tipo_ente": "ejecutivo",
+    "url": "https://tabasco.gob.mx/licitaciones-vigentes-de-adquisiciones",
+    "notas": "Gobierno del estado de Tabasco, licitaciones de adquisiciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tabasco - Licitaciones Obras Públicas",
+    "estado": "Tabasco",
+    "tipo_ente": "ejecutivo",
+    "url": "https://tabasco.gob.mx/licitaciones-vigentes-de-obras-publicas",
+    "notas": "Gobierno del estado de Tabasco, licitaciones de obras públicas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tamaulipas - Licitaciones",
+    "estado": "Tamaulipas",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.tamaulipas.gob.mx/licitaciones/",
+    "notas": "Portal del gobierno de Tamaulipas, licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tamaulipas - SEDER Licitaciones Públicas",
+    "estado": "Tamaulipas",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.tamaulipas.gob.mx/desarrollorural/licitaciones-publicas/",
+    "notas": "Secretaría de Desarrollo Rural de Tamaulipas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tamaulipas - Ciudad Victoria Licitaciones",
+    "estado": "Tamaulipas",
+    "tipo_ente": "municipio",
+    "url": "http://www.ciudadvictoria.gob.mx/sitio-transparencia-2/licitaciones/",
+    "notas": "Municipio de Ciudad Victoria, transparencia licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Tlaxcala - Transparencia Licitaciones",
+    "estado": "Tlaxcala",
+    "tipo_ente": "ejecutivo",
+    "url": "https://platrans.tlaxcala.gob.mx/sistemas/transparencia/trans_qonsulta1.php?dep=12&fmt=199&lin=&option=com_content&view=article&id=34&itemid=73&ret=%2Fsistemas%2Ftransparencia%2Ftrans_qonsulta1.php",
+    "notas": "Plataforma de transparencia de Tlaxcala, portal de licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Veracruz - Poder Judicial Licitaciones",
+    "estado": "Veracruz",
+    "tipo_ente": "poder judicial",
+    "url": "https://www.pjeveracruz.gob.mx/licitaciones/",
+    "notas": "Poder Judicial del Estado de Veracruz",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Veracruz - SSA Adquisiciones Licitaciones 2026",
+    "estado": "Veracruz",
+    "tipo_ente": "ejecutivo",
+    "url": "https://www.ssaver.gob.mx/adquisiciones/licitaciones-2026/",
+    "notas": "Secretaría de Salud de Veracruz, adquisiciones 2026",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Yucatán - Adquisiciones Convocatorias",
+    "estado": "Yucatán",
+    "tipo_ente": "ejecutivo",
+    "url": "https://adquisiciones.yucatan.gob.mx/#/convocatorias",
+    "notas": "Portal de adquisiciones del gobierno de Yucatán, SPA Angular/React",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Yucatán - Trámites Portal",
+    "estado": "Yucatán",
+    "tipo_ente": "ejecutivo",
+    "url": "https://tramites.yucatan.gob.mx/",
+    "notas": "Portal de trámites del gobierno de Yucatán",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Yucatán - IEPAC Licitaciones",
+    "estado": "Yucatán",
+    "tipo_ente": "órgano autónomo",
+    "url": "https://www.iepac.mx/licitaciones",
+    "notas": "Instituto Electoral y de Participación Ciudadana de Yucatán",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Yucatán - Mérida Licitaciones",
+    "estado": "Yucatán",
+    "tipo_ente": "municipio",
+    "url": "https://merida.gob.mx/licitaciones/",
+    "notas": "Municipio de Mérida, portal de licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Yucatán - Puertos Yucatán Licitaciones",
+    "estado": "Yucatán",
+    "tipo_ente": "organismo descentralizado",
+    "url": "https://www.puertosyucatan.com/on/lic_ingenieria.htm",
+    "notas": "Puertos y Marina del Estado de Yucatán, licitaciones de ingeniería",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Zacatecas - SA Licitaciones",
+    "estado": "Zacatecas",
+    "tipo_ente": "ejecutivo",
+    "url": "https://licitadmin.sazacatecas.gob.mx/site/licitaciones",
+    "notas": "Secretaría de Administración de Zacatecas, licitaciones",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Zacatecas - Función Pública Licitaciones",
+    "estado": "Zacatecas",
+    "tipo_ente": "ejecutivo",
+    "url": "https://funcionpublica.zacatecas.gob.mx/licitaciones",
+    "notas": "Secretaría de la Función Pública de Zacatecas",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Zacatecas - Fiscalía Órgano Interno",
+    "estado": "Zacatecas",
+    "tipo_ente": "fiscalía",
+    "url": "https://www.fiscaliazacatecas.gob.mx/organo-interno/",
+    "notas": "Fiscalía General del Estado de Zacatecas, órgano interno",
+    "scraper_type": "auto"
+  },
+  {
+    "nombre": "Zacatecas - Capital Licitaciones Administración",
+    "estado": "Zacatecas",
+    "tipo_ente": "municipio",
+    "url": "https://portal.capitaldezacatecas.gob.mx/licitaciones/administracion",
+    "notas": "Municipio capital de Zacatecas, administración de licitaciones",
+    "scraper_type": "auto"
+  }
+]

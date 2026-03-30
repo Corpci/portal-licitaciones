@@ -1,73 +1,123 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  LayoutDashboard, 
-  Globe, 
-  Search, 
-  Plus, 
-  Trash2, 
-  ExternalLink, 
-  RefreshCw, 
-  CheckCircle2, 
+import {
+  LayoutDashboard,
+  Globe,
+  Search,
+  Plus,
+  Trash2,
+  ExternalLink,
+  RefreshCw,
+  CheckCircle2,
   AlertCircle,
   Clock,
   ChevronRight,
   FileText,
   Save,
-  X
+  X,
+  BarChart2,
+  Users,
+  LogOut
 } from 'lucide-react';
 import { Portal, Tender, PortalSummary } from './types';
 import { INITIAL_PORTALS } from './constants';
-import { scanPortal } from './services/geminiService';
+import { scanPortal, prepareWebSummary, runFullAgentFetch, fetchReportData, getDownloadCsvUrl } from './services/geminiService';
+import LoginPage from './components/LoginPage';
+import UserManagement from './components/UserManagement';
+import { login, logout, getStoredAuth, saveAuth, fetchTenders, saveTender, deleteTender } from './services/authService';
 
 export default function App() {
   const [portals, setPortals] = useState<Portal[]>([]);
   const [capturedTenders, setCapturedTenders] = useState<Tender[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'portals' | 'captured'>('dashboard');
-  const [isScanning, setIsScanning] = useState<string | null>(null); // portalId being scanned
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'portals' | 'captured' | 'reportes' | 'usuarios'>('dashboard');
+  const [agentRunning, setAgentRunning] = useState(false);
+  const [agentLogs, setAgentLogs] = useState<string[]>([]);
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [isScanning, setIsScanning] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<PortalSummary | null>(null);
   const [showAddPortal, setShowAddPortal] = useState(false);
   const [newPortal, setNewPortal] = useState({ name: '', url: '' });
+  const [webSummary, setWebSummary] = useState<string | null>(null);
+  const [isPreparingSummary, setIsPreparingSummary] = useState<string | null>(null);
 
-  // Load data from localStorage
+  // Auth state
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  // On mount: restore auth + portals
   useEffect(() => {
+    const stored = getStoredAuth();
+    if (stored) {
+      setAuthUser(stored.user);
+      setAuthToken(stored.token);
+    }
+
     const savedPortals = localStorage.getItem('portals');
-    const savedTenders = localStorage.getItem('capturedTenders');
-    
     if (savedPortals) {
-      setPortals(JSON.parse(savedPortals));
+      const parsed = JSON.parse(savedPortals);
+      if (parsed.length < INITIAL_PORTALS.length) {
+        setPortals(INITIAL_PORTALS);
+        localStorage.setItem('portals', JSON.stringify(INITIAL_PORTALS));
+      } else {
+        setPortals(parsed);
+      }
     } else {
       setPortals(INITIAL_PORTALS);
       localStorage.setItem('portals', JSON.stringify(INITIAL_PORTALS));
     }
-    
-    if (savedTenders) {
-      setCapturedTenders(JSON.parse(savedTenders));
-    }
   }, []);
 
-  // Save data to localStorage
+  // Load tenders from API when authenticated
+  useEffect(() => {
+    if (!authToken) return;
+    fetchTenders().then(tenders => {
+      // Map DB column names to Tender interface
+      const mapped: Tender[] = tenders.map((t: any) => ({
+        id: t.id,
+        portalId: t.portal_id ?? t.portalId,
+        title: t.title,
+        description: t.description ?? '',
+        url: t.url ?? '',
+        date: t.date ?? '',
+        capturedAt: t.captured_at ?? t.capturedAt ?? '',
+      }));
+      setCapturedTenders(mapped);
+    }).catch(console.error);
+  }, [authToken]);
+
+  // Save portals to localStorage
   useEffect(() => {
     if (portals.length > 0) {
       localStorage.setItem('portals', JSON.stringify(portals));
     }
   }, [portals]);
 
-  useEffect(() => {
-    localStorage.setItem('capturedTenders', JSON.stringify(capturedTenders));
-  }, [capturedTenders]);
+  // Auth handlers
+  const handleLogin = async (email: string, password: string) => {
+    const { token, user } = await login(email, password);
+    saveAuth(token, user);
+    setAuthToken(token);
+    setAuthUser(user);
+  };
 
+  const handleLogout = () => {
+    logout();
+    setAuthToken(null);
+    setAuthUser(null);
+    setCapturedTenders([]);
+  };
+
+  // Portal handlers
   const handleAddPortal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPortal.name || !newPortal.url) return;
-    
     const portal: Portal = {
       id: Math.random().toString(36).substr(2, 9),
       name: newPortal.name,
       url: newPortal.url,
       status: 'active'
     };
-    
     setPortals([...portals, portal]);
     setNewPortal({ name: '', url: '' });
     setShowAddPortal(false);
@@ -83,15 +133,12 @@ export default function App() {
     try {
       const result = await scanPortal(portal.url, portal.id);
       setScanResult(result);
-      
-      // Update portal last checked time
-      setPortals(portals.map(p => 
+      setPortals(portals.map(p =>
         p.id === portal.id ? { ...p, lastChecked: new Date().toISOString() } : p
       ));
     } catch (error) {
       console.error("Scan failed", error);
-      // Update status to error
-      setPortals(portals.map(p => 
+      setPortals(portals.map(p =>
         p.id === portal.id ? { ...p, status: 'error' } : p
       ));
     } finally {
@@ -99,19 +146,99 @@ export default function App() {
     }
   };
 
-  const handleCaptureTender = (tenderData: Omit<Tender, 'id' | 'portalId' | 'capturedAt'>, portalId: string) => {
+  // Tender handlers (API-backed)
+  const handleCaptureTender = async (tenderData: Omit<Tender, 'id' | 'portalId' | 'capturedAt'>, portalId: string) => {
     const tender: Tender = {
       ...tenderData,
       id: Math.random().toString(36).substr(2, 9),
       portalId,
-      capturedAt: new Date().toISOString()
+      capturedAt: new Date().toISOString(),
     };
-    setCapturedTenders([...capturedTenders, tender]);
+    try {
+      await saveTender(tender);
+      setCapturedTenders(prev => [...prev, tender]);
+    } catch (error) {
+      console.error('Error saving tender:', error);
+    }
   };
 
-  const handleDeleteTender = (id: string) => {
-    setCapturedTenders(capturedTenders.filter(t => t.id !== id));
+  const handleDeleteTender = async (id: string) => {
+    try {
+      await deleteTender(id);
+      setCapturedTenders(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error('Error deleting tender:', error);
+    }
   };
+
+  const handleDownloadScanCsv = () => {
+    if (!scanResult) return;
+    const portalName = portals.find(p => p.id === scanResult.portalId)?.name ?? 'portal';
+    const headers = ['titulo', 'descripcion', 'fecha', 'url'];
+    const rows = scanResult.tenders.map(t => [
+      `"${(t.title ?? '').replace(/"/g, '""')}"`,
+      `"${(t.description ?? '').replace(/"/g, '""')}"`,
+      `"${(t.date ?? '').replace(/"/g, '""')}"`,
+      `"${(t.url ?? '').replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${portalName.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const handlePrepareWebSummary = async (tender: Tender) => {
+    setIsPreparingSummary(tender.id);
+    try {
+      const portalName = portals.find(p => p.id === tender.portalId)?.name || 'Portal Gubernamental';
+      const summary = await prepareWebSummary({
+        title: tender.title,
+        description: tender.description,
+        url: tender.url,
+        date: tender.date,
+        portalName,
+      });
+      setWebSummary(summary);
+    } catch (error) {
+      console.error('Error preparing summary:', error);
+    } finally {
+      setIsPreparingSummary(null);
+    }
+  };
+
+  const handleRunFullAgent = async () => {
+    setAgentRunning(true);
+    setAgentLogs([]);
+    await runFullAgentFetch(
+      (msg) => setAgentLogs(prev => [...prev.slice(-100), msg]),
+      () => {
+        setAgentRunning(false);
+        handleLoadReport();
+      },
+      (err) => {
+        setAgentLogs(prev => [...prev, `ERROR: ${err}`]);
+        setAgentRunning(false);
+      }
+    );
+  };
+
+  const handleLoadReport = async () => {
+    setReportLoading(true);
+    try {
+      const data = await fetchReportData();
+      setReportData(data);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // Show login page if not authenticated
+  if (!authToken) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#E4E3E0] text-[#141414] font-sans selection:bg-[#141414] selection:text-[#E4E3E0]">
@@ -121,36 +248,60 @@ export default function App() {
           <h1 className="text-xl font-bold tracking-tighter uppercase italic font-serif">Licitaciones.AI</h1>
           <p className="text-[10px] opacity-50 uppercase tracking-widest mt-1">Automatización de Portales</p>
         </div>
-        
+
         <nav className="mt-8 px-4 space-y-2">
-          <button 
+          <button
             onClick={() => setActiveTab('dashboard')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all ${activeTab === 'dashboard' ? 'bg-[#141414] text-[#E4E3E0]' : 'hover:bg-[#141414]/5'}`}
           >
             <LayoutDashboard size={18} />
             <span>Panel de Control</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('portals')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all ${activeTab === 'portals' ? 'bg-[#141414] text-[#E4E3E0]' : 'hover:bg-[#141414]/5'}`}
           >
             <Globe size={18} />
             <span>Portales Gubernamentales</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('captured')}
             className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all ${activeTab === 'captured' ? 'bg-[#141414] text-[#E4E3E0]' : 'hover:bg-[#141414]/5'}`}
           >
             <FileText size={18} />
             <span>Licitaciones Capturadas</span>
           </button>
+          <button
+            onClick={() => setActiveTab('reportes')}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all ${activeTab === 'reportes' ? 'bg-[#141414] text-[#E4E3E0]' : 'hover:bg-[#141414]/5'}`}
+          >
+            <BarChart2 size={18} />
+            <span>Reportes</span>
+          </button>
+          {authUser?.role === 'admin' && (
+            <button
+              onClick={() => setActiveTab('usuarios')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all ${activeTab === 'usuarios' ? 'bg-[#141414] text-[#E4E3E0]' : 'hover:bg-[#141414]/5'}`}
+            >
+              <Users size={18} />
+              <span>Usuarios</span>
+            </button>
+          )}
         </nav>
 
         <div className="absolute bottom-0 left-0 w-full p-6 border-t border-[#141414]">
-          <div className="flex items-center gap-3 text-[10px] opacity-50 uppercase tracking-widest">
+          <div className="flex items-center gap-3 text-[10px] opacity-50 uppercase tracking-widest mb-3">
             <Clock size={12} />
             <span>Última Sincronización: {new Date().toLocaleTimeString()}</span>
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity"
+          >
+            <LogOut size={12} />
+            <span>Cerrar Sesión</span>
+          </button>
+          <p className="text-[10px] opacity-30 mt-1 truncate">{authUser?.nombre}</p>
         </div>
       </div>
 
@@ -158,7 +309,7 @@ export default function App() {
       <main className="md:ml-64 p-8 min-h-screen">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
-            <motion.div 
+            <motion.div
               key="dashboard"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -196,7 +347,7 @@ export default function App() {
                           <p className="text-sm font-medium">{portal.name}</p>
                           <p className="text-[10px] opacity-50 truncate max-w-[200px]">{portal.url}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleScan(portal)}
                           disabled={isScanning === portal.id}
                           className="p-2 hover:bg-[#141414] hover:text-[#E4E3E0] transition-colors disabled:opacity-50"
@@ -205,7 +356,7 @@ export default function App() {
                         </button>
                       </div>
                     ))}
-                    <button 
+                    <button
                       onClick={() => setActiveTab('portals')}
                       className="w-full text-center py-2 text-[10px] uppercase tracking-widest hover:underline mt-4"
                     >
@@ -224,7 +375,7 @@ export default function App() {
                       </div>
                       <div>
                         <p className="text-lg font-serif italic">Operativo</p>
-                        <p className="text-xs opacity-60">Escaneo inteligente habilitado vía Gemini AI.</p>
+                        <p className="text-xs opacity-60">Escaneo inteligente habilitado.</p>
                       </div>
                     </div>
                   </div>
@@ -250,7 +401,7 @@ export default function App() {
           )}
 
           {activeTab === 'portals' && (
-            <motion.div 
+            <motion.div
               key="portals"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -262,7 +413,7 @@ export default function App() {
                   <h2 className="text-4xl font-serif italic tracking-tight">Portales</h2>
                   <p className="text-sm opacity-60 mt-2">Gestión y escaneo de fuentes de información.</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowAddPortal(true)}
                   className="flex items-center gap-2 bg-[#141414] text-[#E4E3E0] px-6 py-3 text-xs uppercase tracking-widest hover:opacity-90 transition-opacity"
                 >
@@ -274,7 +425,7 @@ export default function App() {
               {/* Scan Result Overlay */}
               <AnimatePresence>
                 {scanResult && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -283,14 +434,30 @@ export default function App() {
                     <div className="bg-[#E4E3E0] border border-[#141414] w-full max-w-4xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
                       <div className="p-6 border-b border-[#141414] flex justify-between items-center bg-[#141414] text-[#E4E3E0]">
                         <div>
-                          <h3 className="text-xl font-serif italic">Resultados del Escaneo</h3>
+                          <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-xl font-serif italic">Resultados del Escaneo</h3>
+                            <span className={`text-[10px] px-2 py-1 uppercase tracking-widest ${scanResult.source === 'scraper' ? 'bg-green-500' : 'bg-yellow-500'} text-white`}>
+                              {scanResult.source === 'scraper' ? 'Datos en tiempo real' : 'Generado por IA'}
+                            </span>
+                          </div>
                           <p className="text-[10px] uppercase tracking-widest opacity-50">Portal: {portals.find(p => p.id === scanResult.portalId)?.name}</p>
                         </div>
-                        <button onClick={() => setScanResult(null)} className="hover:rotate-90 transition-transform">
-                          <X size={24} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={handleDownloadScanCsv}
+                            disabled={scanResult.tenders.length === 0}
+                            className="flex items-center gap-2 border border-[#E4E3E0]/30 px-4 py-2 text-[10px] uppercase tracking-widest hover:bg-[#E4E3E0] hover:text-[#141414] transition-all disabled:opacity-30"
+                            title="Descargar resultados como CSV"
+                          >
+                            <Save size={14} />
+                            Descargar CSV
+                          </button>
+                          <button onClick={() => setScanResult(null)} className="hover:rotate-90 transition-transform">
+                            <X size={24} />
+                          </button>
+                        </div>
                       </div>
-                      
+
                       <div className="flex-1 overflow-y-auto p-8 space-y-8">
                         <section>
                           <h4 className="text-[10px] uppercase tracking-widest opacity-50 mb-4">Resumen Ejecutivo</h4>
@@ -315,7 +482,7 @@ export default function App() {
                                       </a>
                                     </div>
                                   </div>
-                                  <button 
+                                  <button
                                     onClick={() => handleCaptureTender(tender, scanResult.portalId)}
                                     className="p-3 border border-current hover:bg-[#E4E3E0] hover:text-[#141414] transition-colors"
                                     title="Capturar Licitación"
@@ -350,7 +517,7 @@ export default function App() {
                         {portal.lastChecked ? new Date(portal.lastChecked).toLocaleString() : 'Nunca'}
                       </div>
                       <div className="flex justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handleScan(portal)}
                           disabled={isScanning === portal.id}
                           className="p-2 border border-[#141414]/20 hover:bg-[#141414] hover:text-[#E4E3E0] transition-all disabled:opacity-50"
@@ -358,16 +525,16 @@ export default function App() {
                         >
                           {isScanning === portal.id ? <RefreshCw size={14} className="animate-spin" /> : <Search size={14} />}
                         </button>
-                        <a 
-                          href={portal.url} 
-                          target="_blank" 
+                        <a
+                          href={portal.url}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 border border-[#141414]/20 hover:bg-[#141414] hover:text-[#E4E3E0] transition-all"
                           title="Abrir Portal"
                         >
                           <ExternalLink size={14} />
                         </a>
-                        <button 
+                        <button
                           onClick={() => handleDeletePortal(portal.id)}
                           className="p-2 border border-[#141414]/20 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
                           title="Eliminar"
@@ -383,7 +550,7 @@ export default function App() {
           )}
 
           {activeTab === 'captured' && (
-            <motion.div 
+            <motion.div
               key="captured"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -405,7 +572,7 @@ export default function App() {
                 <div className="h-64 border border-dashed border-[#141414]/30 flex flex-col items-center justify-center space-y-4 opacity-50">
                   <FileText size={48} />
                   <p className="font-serif italic">No hay licitaciones capturadas aún.</p>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('portals')}
                     className="text-[10px] uppercase tracking-widest border-b border-[#141414] pb-1 hover:opacity-100"
                   >
@@ -417,14 +584,14 @@ export default function App() {
                   {capturedTenders.map(tender => (
                     <div key={tender.id} className="border border-[#141414] bg-white p-8 group relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
+                        <button
                           onClick={() => handleDeleteTender(tender.id)}
                           className="text-red-500 hover:scale-110 transition-transform"
                         >
                           <Trash2 size={20} />
                         </button>
                       </div>
-                      
+
                       <div className="flex flex-col md:flex-row gap-8">
                         <div className="flex-1 space-y-4">
                           <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest opacity-50">
@@ -433,19 +600,26 @@ export default function App() {
                           </div>
                           <h3 className="text-2xl font-serif italic leading-tight">{tender.title}</h3>
                           <p className="text-sm leading-relaxed opacity-70">{tender.description}</p>
-                          
+
                           <div className="pt-4 flex flex-wrap gap-4">
-                            <a 
-                              href={tender.url} 
-                              target="_blank" 
+                            <a
+                              href={tender.url}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-2 bg-[#141414] text-[#E4E3E0] px-6 py-3 text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity"
                             >
                               <ExternalLink size={14} />
                               Ver Convocatoria Original
                             </a>
-                            <button className="flex items-center gap-2 border border-[#141414] px-6 py-3 text-[10px] uppercase tracking-widest hover:bg-[#141414] hover:text-[#E4E3E0] transition-all">
-                              <ChevronRight size={14} />
+                            <button
+                              onClick={() => handlePrepareWebSummary(tender)}
+                              disabled={isPreparingSummary === tender.id}
+                              className="flex items-center gap-2 border border-[#141414] px-6 py-3 text-[10px] uppercase tracking-widest hover:bg-[#141414] hover:text-[#E4E3E0] transition-all disabled:opacity-50"
+                            >
+                              {isPreparingSummary === tender.id
+                                ? <RefreshCw size={14} className="animate-spin" />
+                                : <ChevronRight size={14} />
+                              }
                               Preparar Resumen para Web
                             </button>
                           </div>
@@ -457,19 +631,193 @@ export default function App() {
               )}
             </motion.div>
           )}
+
+          {activeTab === 'reportes' && (
+            <motion.div
+              key="reportes"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-8"
+            >
+              <header className="flex justify-between items-end border-b border-[#141414] pb-6">
+                <div>
+                  <h2 className="text-4xl font-serif italic tracking-tight">Reportes</h2>
+                  <p className="text-sm opacity-60 mt-2">Licitaciones recientes de los 87 portales monitoreados.</p>
+                </div>
+                <div className="flex gap-3">
+                  {authUser?.role === 'admin' && (
+                    <button
+                      onClick={handleRunFullAgent}
+                      disabled={agentRunning}
+                      className="flex items-center gap-2 bg-[#141414] text-[#E4E3E0] px-6 py-3 text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {agentRunning ? <RefreshCw size={16} className="animate-spin" /> : <Search size={16} />}
+                      {agentRunning ? 'Ejecutando...' : 'Ejecutar Agente Completo'}
+                    </button>
+                  )}
+                  <a
+                    href={getDownloadCsvUrl()}
+                    className="flex items-center gap-2 border border-[#141414] px-6 py-3 text-xs uppercase tracking-widest hover:bg-[#141414] hover:text-[#E4E3E0] transition-all"
+                  >
+                    <Save size={16} />
+                    Descargar CSV
+                  </a>
+                </div>
+              </header>
+
+              {/* Agent Log Console */}
+              {(agentRunning || agentLogs.length > 0) && (
+                <div className="border border-[#141414] bg-[#141414] text-[#E4E3E0] p-4 font-mono text-xs max-h-48 overflow-y-auto">
+                  <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Log del Agente</p>
+                  {agentLogs.map((log, i) => (
+                    <div key={i} className="opacity-80 leading-relaxed">{log}</div>
+                  ))}
+                  {agentRunning && <div className="animate-pulse mt-2">▋</div>}
+                </div>
+              )}
+
+              {/* Load Data Button (if no data yet) */}
+              {reportData.length === 0 && !reportLoading && !agentRunning && (
+                <div className="border border-dashed border-[#141414]/30 h-48 flex flex-col items-center justify-center gap-4 opacity-60">
+                  <BarChart2 size={48} />
+                  <p className="font-serif italic">No hay datos cargados.</p>
+                  <button onClick={handleLoadReport} className="text-[10px] uppercase tracking-widest border-b border-[#141414] pb-1">
+                    Cargar último reporte
+                  </button>
+                </div>
+              )}
+
+              {/* Loading spinner */}
+              {reportLoading && (
+                <div className="flex items-center justify-center h-32">
+                  <RefreshCw size={32} className="animate-spin opacity-30" />
+                </div>
+              )}
+
+              {/* Results Table */}
+              {reportData.length > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="text-xs opacity-50 uppercase tracking-widest">{reportData.length} licitaciones encontradas</p>
+                    <button onClick={handleLoadReport} className="text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 flex items-center gap-1">
+                      <RefreshCw size={10} /> Actualizar
+                    </button>
+                  </div>
+                  <div className="border border-[#141414] overflow-hidden overflow-x-auto">
+                    <table className="w-full text-sm min-w-[900px]">
+                      <thead>
+                        <tr className="bg-[#141414] text-[#E4E3E0] text-[10px] uppercase tracking-widest">
+                          <th className="p-3 text-left">Estado</th>
+                          <th className="p-3 text-left">Convocante</th>
+                          <th className="p-3 text-left">Objeto</th>
+                          <th className="p-3 text-left">Tipo</th>
+                          <th className="p-3 text-left">Fecha Pub.</th>
+                          <th className="p-3 text-left">Estatus</th>
+                          <th className="p-3 text-left">Enlace</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#141414]/10">
+                        {reportData.map((row, i) => (
+                          <tr key={i} className="hover:bg-[#141414]/5 transition-colors">
+                            <td className="p-3 text-xs font-medium whitespace-nowrap">{row.estado || '—'}</td>
+                            <td className="p-3 text-xs opacity-70 max-w-[160px] truncate">{row.ente_convocante || '—'}</td>
+                            <td className="p-3 text-xs max-w-[260px]">
+                              <span className="line-clamp-2">{row.objeto || row.numero_procedimiento || '—'}</span>
+                            </td>
+                            <td className="p-3 text-xs opacity-70 whitespace-nowrap">{row.tipo_procedimiento || '—'}</td>
+                            <td className="p-3 text-xs opacity-70 whitespace-nowrap font-mono">{row.fecha_publicacion || '—'}</td>
+                            <td className="p-3 text-xs">
+                              <span className={`px-2 py-0.5 uppercase text-[9px] tracking-widest ${
+                                row.estatus?.toLowerCase().includes('vigente') ? 'bg-green-100 text-green-800' :
+                                row.estatus?.toLowerCase().includes('cancel') ? 'bg-red-100 text-red-800' :
+                                'bg-[#141414]/10'
+                              }`}>
+                                {row.estatus || 'N/D'}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              {(row.url_detalle_procedimiento || row.fuente_url) ? (
+                                <a
+                                  href={row.url_detalle_procedimiento || row.fuente_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-1 hover:text-blue-600"
+                                >
+                                  <ExternalLink size={14} />
+                                </a>
+                              ) : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'usuarios' && authUser?.role === 'admin' && (
+            <motion.div
+              key="usuarios"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <UserManagement />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
-      {/* Add Portal Modal */}
+      {/* Web Summary Modal */}
       <AnimatePresence>
-        {showAddPortal && (
-          <motion.div 
+        {webSummary && (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-[#141414]/40 backdrop-blur-sm"
           >
-            <motion.div 
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="bg-[#E4E3E0] border border-[#141414] w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl"
+            >
+              <div className="p-6 border-b border-[#141414] flex justify-between items-center bg-[#141414] text-[#E4E3E0]">
+                <h3 className="text-xl font-serif italic">Resumen para Web</h3>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(webSummary)}
+                    className="text-[10px] uppercase tracking-widest border border-[#E4E3E0]/30 px-4 py-2 hover:bg-[#E4E3E0] hover:text-[#141414] transition-all"
+                  >
+                    Copiar Markdown
+                  </button>
+                  <button onClick={() => setWebSummary(null)} className="hover:rotate-90 transition-transform">
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8">
+                <pre className="text-sm whitespace-pre-wrap font-mono leading-relaxed">{webSummary}</pre>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Portal Modal */}
+      <AnimatePresence>
+        {showAddPortal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-[#141414]/40 backdrop-blur-sm"
+          >
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
@@ -481,12 +829,12 @@ export default function App() {
                   <X size={24} />
                 </button>
               </div>
-              
+
               <form onSubmit={handleAddPortal} className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest opacity-50">Nombre del Portal</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     value={newPortal.name}
                     onChange={e => setNewPortal({ ...newPortal, name: e.target.value })}
@@ -496,8 +844,8 @@ export default function App() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest opacity-50">URL del Portal</label>
-                  <input 
-                    type="url" 
+                  <input
+                    type="url"
                     required
                     value={newPortal.url}
                     onChange={e => setNewPortal({ ...newPortal, url: e.target.value })}
@@ -505,7 +853,7 @@ export default function App() {
                     placeholder="https://..."
                   />
                 </div>
-                <button 
+                <button
                   type="submit"
                   className="w-full bg-[#141414] text-[#E4E3E0] py-4 text-xs uppercase tracking-widest font-bold hover:opacity-90 transition-opacity"
                 >
@@ -520,7 +868,7 @@ export default function App() {
       {/* Loading Overlay */}
       <AnimatePresence>
         {isScanning && !scanResult && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -535,7 +883,7 @@ export default function App() {
             <h3 className="mt-8 text-2xl font-serif italic animate-pulse">Analizando Portal...</h3>
             <p className="mt-2 text-[10px] uppercase tracking-widest opacity-50">Usando Inteligencia Artificial para extraer licitaciones</p>
             <div className="mt-12 w-48 h-[1px] bg-[#141414]/10 overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="h-full bg-[#141414]"
                 animate={{ x: [-200, 200] }}
                 transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}

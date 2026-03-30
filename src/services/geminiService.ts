@@ -1,51 +1,113 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { PortalSummary } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+function authHeader(): Record<string, string> {
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export async function scanPortal(portalUrl: string, portalId: string): Promise<PortalSummary> {
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: `Visita y analiza el siguiente portal en busca de nuevas licitaciones o convocatorias públicas: ${portalUrl}.
-      Extrae un resumen de las oportunidades actuales y una lista de licitaciones específicas encontradas.
-      TODA la respuesta (resumen, títulos, descripciones) DEBE estar en ESPAÑOL.
-      Si no puedes acceder a la página directamente, explica por qué en español pero intenta proporcionar cualquier información general que puedas tener sobre la estructura típica de este portal específico o su actividad reciente si es relevante.`,
-      config: {
-        systemInstruction: "Eres un experto en licitaciones gubernamentales. Tu tarea es analizar portales web y extraer información relevante sobre convocatorias. Debes responder siempre en español de forma profesional y concisa.",
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            portalId: { type: Type.STRING },
-            summary: { type: Type.STRING, description: "A brief summary of what was found on the portal." },
-            tenders: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING, description: "The title of the tender." },
-                  description: { type: Type.STRING, description: "A short description of the tender." },
-                  url: { type: Type.STRING, description: "The direct URL to the tender if available, or the portal URL if not." },
-                  date: { type: Type.STRING, description: "The publication or deadline date if found." }
-                },
-                required: ["title", "description", "url"]
-              }
-            }
-          },
-          required: ["portalId", "summary", "tenders"]
-        }
-      }
+    const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+    const response = await fetch(`${base}/api/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ portalUrl, portalId }),
     });
 
-    const result = JSON.parse(response.text);
-    return {
-      ...result,
-      portalId // Ensure we keep the correct ID
-    };
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(JSON.stringify(err));
+    }
+
+    const result = await response.json();
+    return result as PortalSummary;
   } catch (error) {
     console.error("Error scanning portal:", error);
     throw error;
   }
+}
+
+export async function prepareWebSummary(tender: {
+  title: string;
+  description: string;
+  url: string;
+  date: string;
+  portalName: string;
+}): Promise<string> {
+  const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  const response = await fetch(`${base}/api/summary`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(tender),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(JSON.stringify(err));
+  }
+
+  const result = await response.json();
+  return result.summary as string;
+}
+
+export function runFullAgent(_onLog: (msg: string) => void, _onDone: () => void, _onError: (msg: string) => void): () => void {
+  const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  const eventSource = new EventSource(`${base}/api/run-agent-sse`);
+  // NOTE: EventSource only works with GET. We'll use fetch with ReadableStream instead.
+  // Return cleanup function
+  eventSource.close();
+  return () => {};
+}
+
+export async function runFullAgentFetch(
+  onLog: (msg: string) => void,
+  onDone: () => void,
+  onError: (msg: string) => void
+): Promise<void> {
+  const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  try {
+    const response = await fetch(`${base}/api/run-agent`, {
+      method: 'POST',
+      headers: authHeader(),
+    });
+    if (!response.body) throw new Error('No response body');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const event = JSON.parse(line.slice(6));
+            if (event.type === 'log') onLog(event.message);
+            else if (event.type === 'done') onDone();
+            else if (event.type === 'error') onError(event.message);
+          } catch {}
+        }
+      }
+    }
+  } catch (err: any) {
+    onError(err.message);
+  }
+}
+
+export async function fetchReportData(): Promise<any[]> {
+  const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  const response = await fetch(`${base}/api/report-data`, { headers: authHeader() });
+  const data = await response.json();
+  return data.records ?? [];
+}
+
+export function getDownloadCsvUrl(): string {
+  const base = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  return `${base}/api/download-csv`;
 }
